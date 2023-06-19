@@ -1,32 +1,27 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 
-use image::{
-    io::Reader as ImageReader,
-    Rgb
-};
+use image::{io::Reader as ImageReader, Rgb};
 
 #[derive(Serialize, Deserialize)]
-struct Scheme{
+struct Scheme {
     name: String,
     author: String,
     pub color: Vec<String>,
     pub foreground: String,
-    pub background: String
-} 
+    pub background: String,
+}
 impl Scheme {
     // add code here
-    fn new(data: String) -> Result<Self>
-    {
+    fn new(data: String) -> Result<Self> {
         let mut scheme: Self = serde_json::from_str(&data)?;
         scheme.color.push(scheme.foreground.clone());
         scheme.color.push(scheme.background.clone());
         Ok(scheme)
-         
     }
 }
 
-fn main() -> Result<()>{
+fn main() -> Result<()> {
     let data = r##"{
   "name": "",
   "author": "",
@@ -59,134 +54,100 @@ fn main() -> Result<()>{
     let img_height = rgb_vals.height();
     let img_width = rgb_vals.width();
 
-
-    for i in 0..img_width{
-        for j in 0..img_height{
-            let pix = rgb_vals.get_pixel(i,j);
+    for i in 0..img_width {
+        for j in 0..img_height {
+            let pix = rgb_vals.get_pixel(i, j);
 
             let rgb = pix.0;
-            let [r,g,b] = rgb;
+            let [r, g, b] = rgb;
 
-            let (c1,c2,c3) = find_closest_color((r,g,b),scheme.color.clone()).unwrap();
-            rgb_vals.put_pixel(i,j,Rgb([c1,c2,c3]));
-
+            let (c1, c2, c3) = find_closest_color((r, g, b), scheme.color.clone()).unwrap();
+            rgb_vals.put_pixel(i, j, Rgb([c1, c2, c3]));
         }
     }
     rgb_vals.save("output.png").unwrap();
-
 
     println!("{}", scheme.foreground);
     Ok(())
 }
 
-fn euclidean_distance(color1: (u8, u8, u8), color2: (f32, f32, f32)) -> f32 {
-    let (r1, g1, b1) = rgb_to_hsv(color1);
-    let (r2, g2, b2) = color2;
-    let squared_distance = (r2 - r1).powi(2) + (g2 - g1).powi(2) + (b2 - b1).powi(2);
+fn euclidean_distance(color1: (u8, u8, u8), color2: (u8, u8, u8)) -> f32 {
+    let (L1, a1, b1) = xyz_to_lab(rgb_to_xyz(color1));
+    let (L2, a2, b2) = xyz_to_lab(rgb_to_xyz(color2));
+    let squared_distance = (L2 - L1).powi(2) + (a2 - a1).powi(2) + (b2 - b1).powi(2);
     squared_distance.sqrt()
 }
 
-fn hsv_to_rgb(hsv: (f32, f32, f32)) -> (u8, u8, u8) {
-    let (hue, saturation, value) = hsv;
-
-    let c = value * saturation;
-    let x = c * (1.0 - ((hue / 60.0) % 2.0 - 1.0).abs());
-    let m = value - c;
-
-    let (r, g, b) = match hue {
-        hue if hue < 60.0 => (c, x, 0.0),
-        hue if hue < 120.0 => (x, c, 0.0),
-        hue if hue < 180.0 => (0.0, c, x),
-        hue if hue < 240.0 => (0.0, x, c),
-        hue if hue < 300.0 => (x, 0.0, c),
-        _ => (c, 0.0, x),
+fn rgb_to_xyz((r, g, b): (u8, u8, u8)) -> (f32, f32, f32) {
+    // from: https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz
+    let gamma = |v: f32| {
+        if v < 0.04045 {
+            v / 12.92
+        } else {
+            ((v + 0.055) / 1.055).powf(2.4)
+        }
     };
 
-    let r = ((r + m) * 255.0) as u8;
-    let g = ((g + m) * 255.0) as u8;
-    let b = ((b + m) * 255.0) as u8;
+    let sr = gamma(r as f32 / 255.0);
+    let sg = gamma(g as f32 / 255.0);
+    let sb = gamma(b as f32 / 255.0);
 
-    (r, g, b)
-}
-fn rgb_to_hsv(rgb: (u8, u8, u8)) -> (f32, f32, f32) {
-    let (r, g, b) = rgb;
-    let r_norm = r as f32 / 255.0;
-    let g_norm = g as f32 / 255.0;
-    let b_norm = b as f32 / 255.0;
+    let x = (0.4124564 * sr) + (0.3575761 * sg) + (0.1804375 * sb);
+    let y = (0.2126729 * sr) + (0.7151522 * sg) + (0.0721750 * sb);
+    let z = (0.0193339 * sr) + (0.1191920 * sg) + (0.9503041 * sb);
 
-    let max = r_norm.max(g_norm).max(b_norm);
-    let min = r_norm.min(g_norm).min(b_norm);
-    let delta = max - min;
-
-    let hue = if delta == 0.0 {
-        0.0 // No hue
-    } else if max == r_norm {
-        60.0 * (((g_norm - b_norm) / delta) % 6.0)
-    } else if max == g_norm {
-        60.0 * (((b_norm - r_norm) / delta) + 2.0)
-    } else {
-        60.0 * (((r_norm - g_norm) / delta) + 4.0)
-    };
-
-    let saturation = if max == 0.0 {
-        0.0 // No saturation
-    } else {
-        delta / max
-    };
-
-    let value = max;
-
-    (hue, saturation, value)
+    (x, y, z)
 }
 
+fn xyz_to_lab((x, y, z): (f32, f32, f32)) -> (f32, f32, f32) {
+    // from: https://en.wikipedia.org/wiki/CIELAB_color_space#Converting_between_CIELAB_and_CIEXYZ_coordinates
 
-fn hex_to_hsv(hex: &str) -> Option<(f32, f32, f32)> {
+    let f = |t: f32| {
+        let delta: f32 = 6.0 / 29.0;
+
+        if t > delta.powi(3) {
+            t.cbrt()
+        } else {
+            (t / (3.0 * delta * delta)) + (4.0 / 29.0)
+        }
+    };
+
+    let xn = 95.0489;
+    let yn = 100.0;
+    let zn = 108.8840;
+
+    let L = 116.0 * f(y / yn) - 16.0;
+    let a = 500.0 * (f(x / xn) - y / yn);
+    let b = 200.0 * (f(y / yn) - f(z / zn));
+
+    (L, a, b)
+}
+
+fn hex_to_rgb(hex: &str) -> Option<(u8, u8, u8)> {
     if hex.len() != 7 || !hex.starts_with('#') {
         return None; // Invalid hex color format
     }
 
-    let r = u8::from_str_radix(&hex[1..3], 16).ok()? as f32 / 255.0;
-    let g = u8::from_str_radix(&hex[3..5], 16).ok()? as f32 / 255.0;
-    let b = u8::from_str_radix(&hex[5..7], 16).ok()? as f32 / 255.0;
+    let r = u8::from_str_radix(&hex[1..3], 16).ok()?;
+    let g = u8::from_str_radix(&hex[3..5], 16).ok()?;
+    let b = u8::from_str_radix(&hex[5..7], 16).ok()?;
 
-    let max = r.max(g).max(b);
-    let min = r.min(g).min(b);
-    let delta = max - min;
-
-    let hue = if delta == 0.0 {
-        0.0 // No hue
-    } else if max == r {
-        60.0 * ((g - b) / delta % 6.0)
-    } else if max == g {
-        60.0 * ((b - r) / delta + 2.0)
-    } else {
-        60.0 * ((r - g) / delta + 4.0)
-    };
-
-    let saturation = if max == 0.0 {
-        0.0 // No saturation
-    } else {
-        delta / max
-    };
-
-    let value = max;
-
-    Some((hue, saturation, value))
+    Some((r, g, b))
 }
 
-fn find_closest_color(rgb: (u8, u8, u8), color_vec: Vec<String>) -> Option<(u8,u8,u8)> {
-    let mut closest_color: Option<(f32,f32,f32)> = None;
+fn find_closest_color(rgb: (u8, u8, u8), color_vec: Vec<String>) -> Option<(u8, u8, u8)> {
+    let mut closest_color: Option<(u8, u8, u8)> = None;
     let mut min_distance: f32 = std::f32::MAX;
 
     for color in color_vec.into_iter() {
-        if let Some(color_rgb) = hex_to_hsv(&color) {
+        if let Some(color_rgb) = hex_to_rgb(&color) {
             let distance = euclidean_distance(rgb, color_rgb);
             if distance < min_distance {
                 min_distance = distance;
-                closest_color = Some(hex_to_hsv(&color.clone()).unwrap());
+                closest_color = Some(hex_to_rgb(&color.clone()).unwrap());
             }
         }
     }
 
-    Some(hsv_to_rgb(closest_color.unwrap()))
+    Some(closest_color.unwrap())
 }
