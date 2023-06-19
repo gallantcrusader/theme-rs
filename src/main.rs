@@ -80,9 +80,17 @@ fn euclidean_distance(color1: (u8, u8, u8), color2: (u8, u8, u8)) -> f32 {
 
 fn rgb_to_xyz((r, g, b): (u8, u8, u8)) -> (f32, f32, f32) {
     // from: https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz
-    let sr = r as f32 / 255.0;
-    let sg = g as f32 / 255.0;
-    let sb = b as f32 / 255.0;
+    let gamma = |v: f32| {
+        if v < 0.04045 {
+            v / 12.92
+        } else {
+            ((v + 0.055) / 1.055).powf(2.4)
+        }
+    };
+
+    let sr = gamma(r as f32 / 255.0);
+    let sg = gamma(g as f32 / 255.0);
+    let sb = gamma(b as f32 / 255.0);
 
     let x = (0.4124564 * sr) + (0.3575761 * sg) + (0.1804375 * sb);
     let y = (0.2126729 * sr) + (0.7151522 * sg) + (0.0721750 * sb);
