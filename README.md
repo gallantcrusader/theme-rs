@@ -7,3 +7,7 @@ The usage is pretty simple
 
 
 have fun!!
+
+
+
+credits to Daniel Seiler for his [ImageTheming](https://github.com/daniel-seiler/ImageTheming) project
