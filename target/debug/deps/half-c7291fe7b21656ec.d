@@ -1,0 +1,12 @@
+/Users/gallant/Documents/git/theme-rs/target/debug/deps/half-c7291fe7b21656ec.rmeta: /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/lib.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/bfloat.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/bfloat/convert.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/binary16.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/binary16/convert.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/leading_zeros.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/slice.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/vec.rs
+
+/Users/gallant/Documents/git/theme-rs/target/debug/deps/half-c7291fe7b21656ec.d: /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/lib.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/bfloat.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/bfloat/convert.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/binary16.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/binary16/convert.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/leading_zeros.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/slice.rs /Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/vec.rs
+
+/Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/lib.rs:
+/Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/bfloat.rs:
+/Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/bfloat/convert.rs:
+/Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/binary16.rs:
+/Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/binary16/convert.rs:
+/Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/leading_zeros.rs:
+/Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/slice.rs:
+/Users/gallant/.cargo/registry/src/index.crates.io-6f17d22bba15001f/half-2.2.1/src/vec.rs:
