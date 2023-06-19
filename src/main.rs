@@ -3,6 +3,8 @@ use serde_json::Result;
 
 use image::{io::Reader as ImageReader, Rgb};
 
+use clap::{Arg, Command};
+
 #[derive(Serialize, Deserialize)]
 struct Scheme {
     name: String,
@@ -22,33 +24,34 @@ impl Scheme {
 }
 
 fn main() -> Result<()> {
-    let data = r##"{
-  "name": "",
-  "author": "",
-  "color": [
-    "#1c252c",
-    "#df5b61",
-    "#78b892",
-    "#de8f78",
-    "#6791c9",
-    "#bc83e3",
-    "#67afc1",
-    "#d9d7d6",
-    "#484e5b",
-    "#f16269",
-    "#8cd7aa",
-    "#e9967e",
-    "#79aaeb",
-    "#c488ec",
-    "#7acfe4",
-    "#e5e5e5"
-  ],
-  "foreground": "#d9d7d6",
-  "background": "#061115"
-}"##;
-    let scheme = Scheme::new(data.to_string())?;
+    let cmd = Command::new("theme")
+        .author("Gallant")
+        .version("0.1.2")
+        .about("Matches input image to color scheme")
+        .arg(
+            Arg::new("image")
+                .short('i')
+                .long("image")
+                .value_name("Path/to/image")
+                .help("The image to be processesed"),
+        )
+        .arg(
+            Arg::new("scheme")
+                .short('s')
+                .long("scheme")
+                .value_name("Path/to/scheme")
+                .help("The color scheme in JSON format to be used for processing"),
+        )
+        .get_matches();
 
-    let img = ImageReader::open("image.png").unwrap().decode().unwrap();
+    let scheme_data = cmd.get_one::<String>("scheme").unwrap();
+
+    let scheme = Scheme::new(std::fs::read_to_string(scheme_data).unwrap())?;
+
+    let img = ImageReader::open(cmd.get_one::<String>("image").unwrap())
+        .unwrap()
+        .decode()
+        .unwrap();
 
     let mut rgb_vals = img.to_rgb8();
     let img_height = rgb_vals.height();
@@ -72,9 +75,9 @@ fn main() -> Result<()> {
 }
 
 fn euclidean_distance(color1: (u8, u8, u8), color2: (u8, u8, u8)) -> f32 {
-    let (L1, a1, b1) = xyz_to_lab(rgb_to_xyz(color1));
-    let (L2, a2, b2) = xyz_to_lab(rgb_to_xyz(color2));
-    let squared_distance = (L2 - L1).powi(2) + (a2 - a1).powi(2) + (b2 - b1).powi(2);
+    let (l1, a1, b1) = xyz_to_lab(rgb_to_xyz(color1));
+    let (l2, a2, b2) = xyz_to_lab(rgb_to_xyz(color2));
+    let squared_distance = (l2 - l1).powi(2) + (a2 - a1).powi(2) + (b2 - b1).powi(2);
     squared_distance.sqrt()
 }
 
@@ -116,11 +119,11 @@ fn xyz_to_lab((x, y, z): (f32, f32, f32)) -> (f32, f32, f32) {
     let yn = 100.0;
     let zn = 108.8840;
 
-    let L = 116.0 * f(y / yn) - 16.0;
+    let l = 116.0 * f(y / yn) - 16.0;
     let a = 500.0 * (f(x / xn) - y / yn);
     let b = 200.0 * (f(y / yn) - f(z / zn));
 
-    (L, a, b)
+    (l, a, b)
 }
 
 fn hex_to_rgb(hex: &str) -> Option<(u8, u8, u8)> {
