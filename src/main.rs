@@ -64,7 +64,14 @@ fn main() -> Result<()> {
             let rgb = pix.0;
             let [r, g, b] = rgb;
 
-            let (c1, c2, c3) = find_closest_color((r, g, b), scheme.color.clone()).unwrap();
+            let (c,d) = find_closest_color((r, g, b), scheme.color.clone());
+            let (mut c1,mut c2,mut c3) = c.unwrap();
+
+            if d >= 8.936723
+            {
+                (c1,c2,c3) = find_middle_color((r,g,b),(c1,c2,c3));
+            }
+
             rgb_vals.put_pixel(i, j, Rgb([c1, c2, c3]));
         }
     }
@@ -138,7 +145,7 @@ fn hex_to_rgb(hex: &str) -> Option<(u8, u8, u8)> {
     Some((r, g, b))
 }
 
-fn find_closest_color(rgb: (u8, u8, u8), color_vec: Vec<String>) -> Option<(u8, u8, u8)> {
+fn find_closest_color(rgb: (u8, u8, u8), color_vec: Vec<String>) -> (Option<(u8, u8, u8)>,f32) {
     let mut closest_color: Option<(u8, u8, u8)> = None;
     let mut min_distance: f32 = std::f32::MAX;
 
@@ -152,5 +159,14 @@ fn find_closest_color(rgb: (u8, u8, u8), color_vec: Vec<String>) -> Option<(u8, 
         }
     }
 
-    Some(closest_color.unwrap())
+    (Some(closest_color.unwrap()), min_distance)
+}
+
+fn find_middle_color(color_a: (u8,u8,u8), color_b: (u8,u8,u8)) -> (u8,u8,u8)
+{
+    let (a1,a2,a3) = color_a;
+    let (b1,b2,b3) = color_b;
+
+    let color_c: (u8,u8,u8) = ((a1+b1)/2,(a2+b2)/2,(a3+b3)/2);
+    color_c
 }
